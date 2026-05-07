@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+    <!-- Firebase SDK (Compat Version) -->
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
     
@@ -144,7 +145,7 @@
 </div>
 
 <script>
-    // 2. FIREBASE AYARLARI (KİMLİK BİLGİLERİN)
+    // 1. FIREBASE YAPILANDIRMASI
     const firebaseConfig = {
         apiKey: "AIzaSyCyHVJ33ETHgP1mPDMVzJAOt86Q9hMk1r4",
         authDomain: "alistirmaya.firebaseapp.com",
@@ -155,10 +156,11 @@
         appId: "1:220036412672:web:c0b32848541259f466efe5"
     };
 
-    // Firebase'i başlat
+    // Firebase Başlatma
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
+    // Değişkenler
     let randomNumber = Math.floor(Math.random() * 20) + 1;
     let reflexStartTime;
 
@@ -178,6 +180,7 @@
         { name: "Mithat Yazgın", pass: "MithatYazgınRobo" }
     ];
 
+    // Sayfa Değiştirme Fonksiyonu
     function showPage(pageId) {
         document.querySelectorAll('.container > div').forEach(div => div.classList.add('hidden'));
         document.getElementById(pageId).classList.remove('hidden');
@@ -185,25 +188,30 @@
 
     // FIREBASE KAYIT İSTEĞİ GÖNDERME
     function sendRequest() {
-        const name = document.getElementById('regName').value;
+        const name = document.getElementById('regName').value.trim();
         const cls = document.getElementById('regClass').value;
         const pass = document.getElementById('regPass').value;
+        
         if(name && cls && pass) {
-            // İsimdeki boşlukları temizleyerek bir ID oluşturuyoruz
-            const userId = name.replace(/\s+/g, '_');
+            // ID oluştururken Türkçe karakterleri ve boşlukları temizle
+            const userId = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            
             database.ref('istekler/' + userId).set({
                 name: name,
                 cls: cls,
                 pass: pass,
                 status: "pending"
+            }).then(() => {
+                document.getElementById('regStatus').innerHTML = "<span style='color:orange'>Kayıt isteğiniz iletildi. Onay bekliyor...</span>";
+                document.getElementById('regName').value = "";
+                document.getElementById('regPass').value = "";
+            }).catch(err => {
+                alert("Hata oluştu: " + err.message);
             });
-            document.getElementById('regStatus').innerHTML = "<span style='color:orange'>Kayıt isteğiniz iletildi. Onay bekliyor...</span>";
-            document.getElementById('regName').value = "";
-            document.getElementById('regPass').value = "";
         } else { alert("Lütfen tüm alanları doldurun!"); }
     }
 
-    // YETKİLİ PANELİ (GERÇEK ZAMANLI)
+    // YETKİLİ PANELİ (GERÇEK ZAMANLI LİSTELEME)
     function updateRequestList() {
         const listDiv = document.getElementById('requestList');
         database.ref('istekler').on('value', (snapshot) => {
@@ -232,7 +240,6 @@
 
     function approveUser(userId) {
         database.ref('istekler/' + userId).update({ status: "approved" });
-        alert("Öğrenci onaylandı!");
     }
 
     function rejectUser(userId) {
@@ -249,11 +256,11 @@
         } else { alert("Hatalı Yetkili Şifresi!"); }
     }
 
-    // ÖĞRENCİ GİRİŞİ (FIREBASE'DEN KONTROL)
+    // ÖĞRENCİ GİRİŞİ
     function studentLogin() {
-        const name = document.getElementById('sName').value;
+        const name = document.getElementById('sName').value.trim();
         const pass = document.getElementById('sPass').value;
-        const userId = name.replace(/\s+/g, '_');
+        const userId = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
 
         database.ref('istekler/' + userId).once('value', (snapshot) => {
             const user = snapshot.val();
@@ -262,15 +269,15 @@
                     document.getElementById('welcomeText').innerText = "Hoş Geldin, " + user.name;
                     showPage('studentDashboard');
                 } else {
-                    alert("Kaydınız henüz onaylanmamış! Lütfen yetkili onayını bekleyin.");
+                    alert("Kaydınız henüz onaylanmamış!");
                 }
             } else {
-                alert("Giriş başarısız! Bilgiler hatalı veya kaydınız bulunamadı.");
+                alert("Giriş başarısız! Bilgiler hatalı.");
             }
         });
     }
 
-    // OYUN VE DİĞER FONKSİYONLAR
+    // ÖĞRETMEN GİRİŞİ
     function teacherLogin() {
         const name = document.getElementById('tName').value;
         const pass = document.getElementById('tPass').value;
@@ -279,6 +286,7 @@
         else alert("Hatalı öğretmen bilgileri!");
     }
 
+    // OYUNLAR
     function playGuessGame() {
         const guess = document.getElementById('guessInput').value;
         const msg = document.getElementById('guessMsg');
