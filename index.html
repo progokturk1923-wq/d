@@ -5,11 +5,11 @@
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AlıştırMAYA - Tam Eksiksiz Sistem</title>
+    <title>AlıştırMAYA - Admin Sohbet Silme</title>
     <style>
         *{box-sizing:border-box;}
         body{font-family:'Segoe UI',sans-serif; background:#eef2f5; display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0; padding:20px;}
-        .container{background:white; border-radius:32px; padding:1.8rem; width:700px; max-width:100%; max-height:95vh; overflow-y:auto; box-shadow:0 20px 30px rgba(0,0,0,0.05);}
+        .container{background:white; border-radius:32px; padding:1.8rem; width:750px; max-width:100%; max-height:95vh; overflow-y:auto; box-shadow:0 20px 30px rgba(0,0,0,0.05);}
         h1{color:#2c3e66; text-align:center; margin-top:0;}
         .hidden{display:none !important;}
         .btn{display:block; width:100%; padding:14px; margin:10px 0; border-radius:60px; font-weight:bold; font-size:1rem; border:none; cursor:pointer; text-align:center;}
@@ -28,7 +28,8 @@
         .course-card{background:white; border-left:5px solid #3498db; margin:8px 0; padding:10px 12px; cursor:pointer; font-weight:bold;}
         .units-container{margin-left:20px;}
         .topic-card{background:#eef2ff; margin:6px 0 0 20px; padding:8px 12px; border-radius:20px; cursor:pointer;}
-        .lesson-content{background:#fff6e5; margin:0 0 10px 40px; padding:12px; border-radius:18px; display:none; border-left:4px solid #f39c12; line-height:1.5;}
+        .lesson-content{background:#fff6e5; margin:0 0 10px 40px; padding:16px; border-radius:18px; display:none; border-left:4px solid #f39c12; line-height:1.6;}
+        .chat-message{border-bottom:1px solid #ddd; padding:8px; display:flex; justify-content:space-between; align-items:center;}
     </style>
 </head>
 <body>
@@ -37,10 +38,10 @@
 
     <!-- ANA MENÜ -->
     <div id="mainMenu">
-        <button class="btn btn-teacher" onclick="goPage('teacherLoginPage')">👩‍🏫 Öğretmen Girişi</button>
-        <button class="btn btn-student" onclick="goPage('studentLoginPage')">🧑‍🎓 Öğrenci Girişi</button>
-        <button class="btn btn-admin" onclick="goPage('adminLoginPage')">🔐 Yetkili Paneli</button>
-        <button class="btn btn-warning" onclick="goPage('studentRegisterPage')">📝 Kaydol</button>
+        <button class="btn btn-teacher" onclick="navigateTo('teacherLoginPage')">👩‍🏫 Öğretmen Girişi</button>
+        <button class="btn btn-student" onclick="navigateTo('studentLoginPage')">🧑‍🎓 Öğrenci Girişi</button>
+        <button class="btn btn-admin" onclick="navigateTo('adminLoginPage')">🔐 Yetkili Paneli</button>
+        <button class="btn btn-warning" onclick="navigateTo('studentRegisterPage')">📝 Kaydol</button>
     </div>
 
     <!-- ÖĞRETMEN GİRİŞ -->
@@ -49,8 +50,8 @@
         <input type="text" id="teacherName" placeholder="Ad Soyad">
         <input type="password" id="teacherPass" placeholder="Şifre">
         <button class="btn btn-teacher" onclick="teacherLogin()">Giriş Yap</button>
-        <button class="btn btn-warning" onclick="goPage('teacherRegisterPage')">Kaydol (Yeni Öğretmen)</button>
-        <button class="btn btn-back" onclick="goPage('mainMenu')">← Ana Menü</button>
+        <button class="btn btn-warning" onclick="navigateTo('teacherRegisterPage')">Kaydol (Yeni Öğretmen)</button>
+        <button class="btn btn-back" onclick="navigateTo('mainMenu')">← Ana Menü</button>
     </div>
 
     <!-- ÖĞRETMEN KAYIT -->
@@ -60,7 +61,7 @@
         <input type="password" id="newTeacherPass" placeholder="Şifre">
         <input type="password" id="newTeacherPass2" placeholder="Şifre Tekrar">
         <button class="btn btn-teacher" onclick="registerTeacher()">Kaydol (Onay Bekliyor)</button>
-        <button class="btn btn-back" onclick="goPage('teacherLoginPage')">← Geri</button>
+        <button class="btn btn-back" onclick="navigateTo('teacherLoginPage')">← Geri</button>
     </div>
 
     <!-- ÖĞRETMEN PANELİ -->
@@ -77,7 +78,7 @@
         <input type="text" id="studentName" placeholder="Ad Soyad">
         <input type="password" id="studentPass" placeholder="Şifre">
         <button class="btn btn-student" onclick="studentLogin()">Giriş Yap</button>
-        <button class="btn btn-back" onclick="goPage('mainMenu')">← Ana Menü</button>
+        <button class="btn btn-back" onclick="navigateTo('mainMenu')">← Ana Menü</button>
     </div>
 
     <!-- ÖĞRENCİ PANELİ -->
@@ -95,7 +96,6 @@
             <div class="subject-btn" data-sub="turkce" onclick="selectSubject('turkce')">📖 Türkçe</div>
             <div class="subject-btn" data-sub="fen" onclick="selectSubject('fen')">🔬 Fen Bilimleri</div>
             <div class="subject-btn" data-sub="sosyal" onclick="selectSubject('sosyal')">🌍 Sosyal Bilgiler</div>
-            <div class="subject-btn" data-sub="ingilizce" onclick="selectSubject('ingilizce')">🇬🇧 İngilizce</div>
         </div>
         <div id="lessonsContainer"></div>
         <button class="btn btn-student" onclick="alert('Futbol oyunu yakında eklenecek')">⚽ Futbol Penaltı</button>
@@ -109,10 +109,10 @@
         <h2>Yetkili Paneli</h2>
         <input type="password" id="adminPwd" placeholder="Admin Şifresi">
         <button class="btn btn-admin" onclick="adminLogin()">Sisteme Gir</button>
-        <button class="btn btn-back" onclick="goPage('mainMenu')">← Geri</button>
+        <button class="btn btn-back" onclick="navigateTo('mainMenu')">← Geri</button>
     </div>
 
-    <!-- YETKİLİ PANELİ -->
+    <!-- YETKİLİ PANELİ (Mesajları silme özellikli) -->
     <div id="adminPanel" class="hidden">
         <h2>Sistem Yönetimi</h2>
         <div class="card"><b>📢 Duyuru</b><div id="adminAnnounceShow"></div><button class="small-btn" onclick="deleteAnnounce()">Duyuruyu Kaldır</button></div>
@@ -120,6 +120,7 @@
         <div class="card"><b>✅ Onaylı Öğretmenler</b><div id="approvedTeachersList"></div></div>
         <div class="card"><b>⏳ Bekleyen Öğrenciler</b><div id="pendingStudentsList"></div></div>
         <div class="card"><b>✅ Onaylı Öğrenciler</b><div id="approvedStudentsList"></div></div>
+        <div class="card"><b>💬 Sohbet Mesajları (Silinebilir)</b><div id="adminChatMessages" style="max-height:250px; overflow:auto;"></div></div>
         <div class="card"><b>📩 Destek Talepleri</b><div id="supportTicketsList"></div></div>
         <button class="btn btn-logout" onclick="logoutAdmin()">Çıkış</button>
     </div>
@@ -130,23 +131,23 @@
         <input type="text" id="stdRegName" placeholder="Ad Soyad">
         <input type="password" id="stdRegPass" placeholder="Şifre">
         <button class="btn btn-student" onclick="studentRegister()">Onay İsteği Gönder</button>
-        <button class="btn btn-back" onclick="goPage('mainMenu')">← Geri</button>
+        <button class="btn btn-back" onclick="navigateTo('mainMenu')">← Geri</button>
     </div>
 
-    <!-- SOHBET -->
+    <!-- SOHBET SAYFASI -->
     <div id="chatPage" class="hidden">
         <h3>💬 Okul Sohbeti</h3>
-        <div id="chatBox" style="height:200px; overflow:auto; background:#f1f5f9; border-radius:20px; padding:10px;"></div>
+        <div id="chatBox" style="height:250px; overflow:auto; background:#f1f5f9; border-radius:20px; padding:10px;"></div>
         <input type="text" id="chatInput" placeholder="Mesaj..."><button class="btn btn-student" onclick="sendChatMsg()">Gönder</button>
-        <button class="btn btn-back" onclick="goPage('studentDashboard')">← Dön</button>
+        <button class="btn btn-back" onclick="navigateTo('studentDashboard')">← Dön</button>
     </div>
 
-    <!-- DESTEK -->
+    <!-- DESTEK SAYFASI -->
     <div id="supportPage" class="hidden">
         <h3>Destek Talebi</h3>
-        <textarea id="supportMsg" rows="3" placeholder="Sorunuzu yazın"></textarea>
+        <textarea id="supportMsg" rows="3" placeholder="Sorunuzu yazın..."></textarea>
         <button class="btn btn-admin" onclick="sendSupport()">Gönder</button>
-        <button class="btn btn-back" onclick="goPage('studentDashboard')">← Dön</button>
+        <button class="btn btn-back" onclick="navigateTo('studentDashboard')">← Dön</button>
     </div>
 </div>
 
@@ -167,183 +168,41 @@
     let currentTeacher = null, currentStudent = null;
     let activeClass = 5, activeSubject = "matematik";
 
-    // ==================== DOĞRU VE EKSİKSİZ DERS KONULARI ====================
+    // =========== DERS KONULARI ===========
     const lessonsData = {
         matematik: {
-            5: {
-                "1. Ünite: Doğal Sayılar": {
-                    "Doğal Sayıları Okuma ve Yazma": "Doğal sayılar 0'dan başlar sonsuza kadar gider. Örnek: 3456 → 'üç bin dört yüz elli altı'.",
-                    "Basamak Değeri ve Çözümleme": "3456 = 3x1000 + 4x100 + 5x10 + 6x1. 3'ün basamak değeri 3000'dir.",
-                    "Doğal Sayılarla Toplama ve Çıkarma": "Aynı basamaklar alt alta yazılır. Eldeli toplama, onluk bozarak çıkarma yapılır."
-                },
-                "2. Ünite: Kesirler": {
-                    "Kesirlerin Anlamı": "Bir bütünün eş parçalarını gösterir. 3/5'te pay 3, payda 5'tir.",
-                    "Kesir Türleri": "Basit (1/2), Bileşik (5/3), Tam sayılı (1 1/2).",
-                    "Kesirlerle Toplama ve Çıkarma": "Paydalar eşitse paylar toplanır. Değilse EKOK ile eşitlenir."
-                },
-                "3. Ünite: Ondalık Gösterim": {
-                    "Ondalık Gösterim": "Kesirleri 10,100,1000 yaparak yazma. 1/2 = 0.5",
-                    "Ondalık Gösterimlerle İşlemler": "Toplama/çıkarmada virgüller alt alta yazılır."
-                }
-            },
-            6: {
-                "1. Ünite: Doğal Sayılarla İşlemler": {
-                    "Üslü İfadeler": "Bir sayının kendisiyle tekrarlı çarpımı. 5³ = 5x5x5 = 125",
-                    "Çarpanlar ve Katlar": "12'nin çarpanları: 1,2,3,4,6,12",
-                    "EBOB ve EKOK": "EBOB en büyük ortak bölen, EKOK en küçük ortak kattır.",
-                    "Bölünebilme Kuralları": "2,3,4,5,6,9,10 ile bölünebilme kuralları."
-                },
-                "2. Ünite: Kesirlerle İşlemler": {
-                    "Kesirlerde Çarpma": "Pay×pay/payda×payda. Örnek: 2/3 x 4/5 = 8/15",
-                    "Kesirlerde Bölme": "Birinci kesir aynen yazılır, ikinci ters çevrilip çarpılır."
-                }
-            },
-            7: {
-                "1. Ünite: Tam Sayılar": {
-                    "Tam Sayılar": "Negatif, sıfır ve pozitif sayılar: ...,-3,-2,-1,0,1,2,3,...",
-                    "Tam Sayılarla Toplama-Çıkarma": "Aynı işaretli toplanır, farklı işaretli çıkarılır.",
-                    "Tam Sayılarla Çarpma-Bölme": "Aynı işaretli (+), zıt işaretli (-)."
-                },
-                "2. Ünite: Rasyonel Sayılar": {
-                    "Rasyonel Sayılar": "a/b şeklinde yazılan sayılar (b≠0). Örnek: -3/4, 1/2",
-                    "Rasyonel Sayılarla İşlemler": "Toplama, çıkarma, çarpma, bölme kesirlerdeki gibidir."
-                }
-            },
-            8: {
-                "1. Ünite: Çarpanlar ve Katlar": {
-                    "EBOB - EKOK": "EBOB en büyük ortak bölen, EKOK en küçük ortak kat.",
-                    "Üslü İfadeler": "2⁵ = 32, 10³ = 1000. Taban aynıysa üsler toplanır."
-                },
-                "2. Ünite: Kareköklü İfadeler": {
-                    "Kareköklü Sayılar": "√36 = 6. Tam kare sayılar: 1,4,9,16,25,36,49...",
-                    "Kareköklü İfadelerle İşlemler": "Toplama/çıkarma için kök içleri aynı olmalı."
-                }
-            }
+            5: { "1. Ünite: Doğal Sayılar": { "Doğal Sayıları Okuma": "Doğal sayılar 0'dan başlar sonsuza gider. 3456 → üç bin dört yüz elli altı.", "Basamak Değeri": "3456 = 3x1000+4x100+5x10+6x1", "Toplama-Çıkarma": "Eldeli toplama, onluk bozarak çıkarma." } },
+            6: { "1. Ünite: Üslü İfadeler": { "Üslü Sayılar": "5³ = 125. Taban 5, üs 3.", "Çarpanlar ve Katlar": "12'nin çarpanları: 1,2,3,4,6,12" } },
+            7: { "1. Ünite: Tam Sayılar": { "Tam Sayılar": "Negatif, sıfır, pozitif: -3,-2,-1,0,1,2...", "Toplama-Çıkarma": "Aynı işaretli toplanır, farklı işaretli çıkarılır." } },
+            8: { "1. Ünite: EBOB-EKOK": { "EBOB": "En büyük ortak bölen", "EKOK": "En küçük ortak kat" } }
         },
         turkce: {
-            5: {
-                "1. Ünite: Sözcükte Anlam": {
-                    "Eş Anlamlı Kelimeler": "Yazılışı farklı anlamı aynı: siyah-kara, beyaz-ak, misafir-konuk.",
-                    "Zıt Anlamlı Kelimeler": "Anlamı zıt olanlar: iyi-kötü, uzun-kısa, sıcak-soğuk.",
-                    "Eş Sesli Kelimeler": "Yazılışı aynı anlamı farklı: yüz (sayı/yüzmek), gül (çiçek/gülmek)."
-                },
-                "2. Ünite: Cümlede Anlam": {
-                    "Öznel Cümleler": "Kişisel görüş bildirir, kanıtlanamaz. 'Bu film çok güzel.'",
-                    "Nesnel Cümleler": "Kanıtlanabilir, herkesçe kabul edilir. 'Ankara Türkiye'nin başkentidir.'"
-                }
-            },
-            6: {
-                "1. Ünite: Metin Türleri": {
-                    "Hikaye Edici Metinler": "Olay, yer, zaman, kişi unsurları içerir. Roman, hikaye, masal.",
-                    "Öğretici Metinler": "Bilgi vermek amacıyla yazılır. Makale, fıkra, deneme."
-                }
-            },
-            7: {
-                "1. Ünite: Fiiller": {
-                    "Fiil Nedir?": "İş, oluş, durum bildirir. koşmak, okumak, uyumak, gelmek.",
-                    "Fiillerde Zaman": "Geçmiş, şimdiki, gelecek, geniş zaman ekleri."
-                }
-            },
-            8: {
-                "1. Ünite: Cümlenin Ögeleri": {
-                    "Özne ve Yüklem": "Cümlenin temel ögeleri. Yüklem işi bildirir, özne işi yapandır.",
-                    "Nesne, Dolaylı Tümleç, Zarf Tümleci": "Cümlenin yardımcı ögeleri."
-                }
-            }
+            5: { "1. Ünite: Sözcükte Anlam": { "Eş Anlam": "siyah-kara", "Zıt Anlam": "iyi-kötü" } },
+            6: { "1. Ünite: Metin Türleri": { "Hikaye Edici": "Olay, yer, zaman, kişi" } },
+            7: { "1. Ünite: Fiiller": { "Fiil Nedir": "İş, oluş, durum bildirir." } },
+            8: { "1. Ünite: Cümlenin Ögeleri": { "Özne-Yüklem": "Temel ögeler" } }
         },
         fen: {
-            5: {
-                "1. Ünite: Güneş, Dünya ve Ay": {
-                    "Güneş'in Yapısı": "Katmanlardan oluşur: çekirdek, ışınım bölgesi, konveksiyon bölgesi, fotosfer, kromosfer, korona.",
-                    "Ay'ın Evreleri": "Yeni Ay, İlk Dördün, Dolunay, Son Dördün. 29 günde tamamlanır.",
-                    "Tutulmalar": "Güneş tutulması (Ay arada), Ay tutulması (Dünya'nın gölgesi Ay'da)."
-                },
-                "2. Ünite: Canlılar Dünyası": {
-                    "Mikroskobik Canlılar": "Bakteriler, mantarlar, protistler. Gözle görülmezler.",
-                    "Bitkiler ve Hayvanlar": "Çiçekli-çiçeksiz bitkiler, omurgalı-omurgasız hayvanlar."
-                }
-            },
-            6: {
-                "1. Ünite: Vücudumuzdaki Sistemler": {
-                    "Destek ve Hareket Sistemi": "İskelet ve kaslardan oluşur. Vücuda şekil verir ve hareketi sağlar.",
-                    "Sindirim Sistemi": "Ağız, yemek borusu, mide, ince bağırsak, kalın bağırsak."
-                }
-            },
-            7: {
-                "1. Ünite: Hücre ve Bölünmeler": {
-                    "Hücre Nedir?": "Canlıların en küçük yapı birimi. Hücre zarı, sitoplazma, çekirdek.",
-                    "Mitoz ve Mayoz": "Mitoz: 2 yeni hücre, eşeysiz üreme. Mayoz: 4 yeni hücre, eşeyli üreme."
-                }
-            },
-            8: {
-                "1. Ünite: Mevsimler ve İklim": {
-                    "Mevsimlerin Oluşumu": "Dünya'nın Güneş etrafında dolanması ve eksen eğikliği sonucu oluşur.",
-                    "İklim ve Hava Olayları": "İklim uzun süreli, hava olayları kısa sürelidir."
-                }
-            }
+            5: { "1. Ünite: Güneş,Dünya,Ay": { "Güneş'in Yapısı": "Katmanlar: çekirdek,ışınım, korona" } },
+            6: { "1. Ünite: Vücudumuzdaki Sistemler": { "Destek ve Hareket": "İskelet ve kas sistemi" } },
+            7: { "1. Ünite: Hücre": { "Hücre Nedir": "Canlının en küçük birimi" } },
+            8: { "1. Ünite: Mevsimler": { "Mevsimlerin Oluşumu": "Eksen eğikliği ve dolanma" } }
         },
         sosyal: {
-            5: {
-                "1. Ünite: Haklarımı Öğreniyorum": {
-                    "Çocuk Hakları": "Yaşama, barınma, eğitim, sağlık ve oyun hakkı. BM Çocuk Hakları Sözleşmesi.",
-                    "Sorumluluklarımız": "Okulda, evde ve çevremize karşı sorumluluklarımız."
-                }
-            },
-            6: {
-                "1. Ünite: İpek Yolunda Türkler": {
-                    "İpek Yolu": "Çin'den başlayıp Avrupa'ya kadar uzanan tarihi ticaret yolu.",
-                    "Türklerin İpek Yolu'ndaki Rolü": "Türkler İpek Yolu'nun güvenliğini sağlamış, ticareti canlandırmıştır."
-                }
-            },
-            7: {
-                "1. Ünite: İletişim ve İnsan İlişkileri": {
-                    "Etkili İletişim": "Kendimizi doğru ifade etme ve karşımızdakini anlama becerisi.",
-                    "Empati Kurma": "Kendimizi karşımızdakinin yerine koyarak düşünmek."
-                }
-            },
-            8: {
-                "1. Ünite: Bir Kahraman Doğuyor": {
-                    "Mustafa Kemal'in Samsun'a Çıkışı": "19 Mayıs 1919, milli mücadele için atılan ilk adım.",
-                    "Genelgeler ve Kongreler": "Amasya Genelgesi, Erzurum ve Sivas Kongreleri, Misak-ı Milli."
-                }
-            }
-        },
-        ingilizce: {
-            5: {
-                "1. Ünite: Hello!": {
-                    "Greetings (Selamlaşmalar)": "Hello, Hi, Good morning, Good afternoon, Good evening, Good night, Good bye, See you.",
-                    "Introductions (Tanışma)": "What is your name? My name is... How are you? I am fine, thank you. Where are you from? I am from Turkey."
-                }
-            },
-            6: {
-                "1. Ünite: Life": {
-                    "Simple Present Tense": "Geniş zaman. I play tennis every Saturday. She goes to school at 8 o'clock. Olumlu, olumsuz, soru cümleleri.",
-                    "Daily Routines": "Every day, always, usually, sometimes, never."
-                }
-            },
-            7: {
-                "1. Ünite: Appearance and Personality": {
-                    "Describing Physical Appearance": "He is tall and slim. She has curly hair. What does he look like?",
-                    "Describing Personality": "She is friendly and hardworking. He is funny and generous."
-                }
-            },
-            8: {
-                "1. Ünite: Friendship": {
-                    "Accepting and Refusing": "Would you like to come to my party? Yes, I'd love to. / Sorry, I can't. Count me in! / I'm afraid I can't.",
-                    "Invitations": "Let's go to the cinema. How about playing football?"
-                }
-            }
+            5: { "1. Ünite: Haklarım": { "Çocuk Hakları": "Yaşama, eğitim, sağlık" } },
+            6: { "1. Ünite: İpek Yolu": { "Tarihi Ticaret Yolu": "Çin'den Avrupa'ya" } },
+            7: { "1. Ünite: İletişim": { "Empati": "Kendini karşındakinin yerine koymak" } },
+            8: { "1. Ünite: Milli Mücadele": { "Samsun": "19 Mayıs 1919" } }
         }
     };
 
-    // Dersleri ekrana basma
     function renderLessons() {
         const container = document.getElementById('lessonsContainer');
         if (!container) return;
-        const classContent = lessonsData[activeSubject]?.[activeClass];
-        if (!classContent) { container.innerHTML = "<div class='card'>İçerik hazırlanıyor...</div>"; return; }
+        const data = lessonsData[activeSubject]?.[activeClass];
+        if (!data) { container.innerHTML = "<div class='card'>İçerik yok</div>"; return; }
         let html = "";
-        for (let [unit, topics] of Object.entries(classContent)) {
+        for (let [unit, topics] of Object.entries(data)) {
             html += `<div class='course-card' onclick="toggleUnit(this)">📘 ${unit}</div>`;
             html += `<div class='units-container' style='display:none; margin-left:15px;'>`;
             for (let [topic, text] of Object.entries(topics)) {
@@ -356,52 +215,52 @@
     }
 
     window.toggleUnit = (el) => { let nxt = el.nextElementSibling; if (nxt && nxt.classList?.contains('units-container')) nxt.style.display = nxt.style.display === 'none' ? 'block' : 'none'; };
-    window.toggleTopic = (el, ev) => { ev.stopPropagation(); let cnt = el.nextElementSibling; if (cnt && cnt.classList?.contains('lesson-content')) cnt.style.display = cnt.style.display === 'none' || cnt.style.display === '' ? 'block' : 'none'; };
+    window.toggleTopic = (el, ev) => { ev.stopPropagation(); let cnt = el.nextElementSibling; if (cnt && cnt.classList?.contains('lesson-content')) cnt.style.display = cnt.style.display === 'none' ? 'block' : 'none'; };
 
     function selectClass(cl) { activeClass = cl; document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active')); document.querySelector(`.class-btn[data-class="${cl}"]`).classList.add('active'); renderLessons(); }
     function selectSubject(sub) { activeSubject = sub; document.querySelectorAll('.subject-btn').forEach(b => b.classList.remove('active')); document.querySelector(`.subject-btn[data-sub="${sub}"]`).classList.add('active'); renderLessons(); }
 
     // ========== SAYFA GEÇİŞ ==========
-    window.goPage = function(pageId) {
+    window.navigateTo = function(pageId) {
         document.querySelectorAll('#appContainer > div').forEach(div => div.classList.add('hidden'));
         document.getElementById(pageId).classList.remove('hidden');
         if (pageId === 'studentDashboard') { loadStudentAnnounce(); renderLessons(); }
-        if (pageId === 'adminPanel') loadAdminData();
-        if (pageId === 'chatPage') loadChat();
+        if (pageId === 'adminPanel') { loadAdminData(); loadAdminChatMessages(); }
+        if (pageId === 'chatPage') loadChatMessages();
     };
 
-    // ========== ÖĞRETMEN İŞLEMLERİ ==========
+    // ========== ÖĞRETMEN ==========
     window.registerTeacher = function() {
-        let name = document.getElementById('newTeacherName').value.trim();
-        let pass = document.getElementById('newTeacherPass').value;
-        let pass2 = document.getElementById('newTeacherPass2').value;
-        if (!name || !pass) return alert("Ad ve şifre giriniz");
+        let name = document.getElementById('newTeacherName').value.trim(), pass = document.getElementById('newTeacherPass').value, pass2 = document.getElementById('newTeacherPass2').value;
+        if (!name || !pass) return alert("Ad ve şifre girin");
         if (pass !== pass2) return alert("Şifreler aynı değil");
-        let id = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
-        db.ref('ogretmenler/' + id).once('value', s => {
+        let id = name.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        db.ref('ogretmenler/'+id).once('value', s => {
             if (s.exists()) return alert("Bu öğretmen adı zaten var");
-            db.ref('ogretmenler/' + id).set({ name, pass, status: "pending" }).then(() => { alert("Kaydınız admin onayına gönderildi."); goPage('teacherLoginPage'); });
+            db.ref('ogretmenler/'+id).set({ name, pass, status: "pending" }).then(() => { alert("Kaydınız admin onayına gönderildi."); navigateTo('teacherLoginPage'); });
         });
     };
     window.teacherLogin = function() {
-        let name = document.getElementById('teacherName').value.trim();
-        let pass = document.getElementById('teacherPass').value;
-        let id = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
-        db.ref('ogretmenler/' + id).once('value', s => {
+        let name = document.getElementById('teacherName').value.trim(), pass = document.getElementById('teacherPass').value;
+        let id = name.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        db.ref('ogretmenler/'+id).once('value', s => {
             let t = s.val();
             if (!t) return alert("Öğretmen bulunamadı");
-            if (t.status !== 'approved') return alert("Hesabınız henüz onaylanmadı!");
+            if (t.status !== 'approved') return alert("Hesabınız onaylanmadı!");
             if (t.pass !== pass) return alert("Şifre hatalı");
             currentTeacher = t.name;
             document.getElementById('teacherWelcomeText').innerHTML = `Hoş geldin ${t.name}`;
-            goPage('teacherDashboard');
+            navigateTo('teacherDashboard');
         });
     };
     window.changeTeacherPass = function() {
-        let old = document.getElementById('oldPassT').value;
-        let newp = document.getElementById('newPassT').value;
-        let id = currentTeacher.toLowerCase().replace(/[^a-z0-9]/g, '_');
-        db.ref('ogretmenler/' + id).once('value', s => { if (s.val().pass === old) { db.ref('ogretmenler/' + id).update({ pass: newp }); alert("Şifre değişti"); } else alert("Eski şifre yanlış"); });
+        let old = document.getElementById('oldPassT').value, newp = document.getElementById('newPassT').value;
+        if (!old || !newp) return alert("Eski ve yeni şifreyi girin");
+        let id = currentTeacher.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        db.ref('ogretmenler/'+id).once('value', s => {
+            if (s.val().pass !== old) return alert("Eski şifre yanlış");
+            db.ref('ogretmenler/'+id).update({ pass: newp }).then(() => alert("Şifre değişti"));
+        });
     };
     window.sendAnnounce = function() {
         let msg = document.getElementById('teacherAnnounce').value.trim();
@@ -410,60 +269,76 @@
         alert("Duyuru yayınlandı");
         document.getElementById('teacherAnnounce').value = '';
     };
-    window.logoutTeacher = function() { currentTeacher = null; goPage('mainMenu'); };
+    window.logoutTeacher = function() { currentTeacher = null; navigateTo('mainMenu'); };
 
-    // ========== ÖĞRENCİ İŞLEMLERİ ==========
+    // ========== ÖĞRENCİ ==========
     window.studentRegister = function() {
-        let name = document.getElementById('stdRegName').value.trim();
-        let pass = document.getElementById('stdRegPass').value;
-        let id = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
-        db.ref('ogrenciler/' + id).once('value', s => {
+        let name = document.getElementById('stdRegName').value.trim(), pass = document.getElementById('stdRegPass').value;
+        let id = name.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        db.ref('ogrenciler/'+id).once('value', s => {
             if (s.exists()) return alert("Bu öğrenci adı kullanılıyor");
-            db.ref('ogrenciler/' + id).set({ name, pass, status: "pending" }).then(() => { alert("Kayıt talebi admin'e iletildi."); goPage('mainMenu'); });
+            db.ref('ogrenciler/'+id).set({ name, pass, status: "pending" }).then(() => { alert("Kayıt talebi admin'e iletildi."); navigateTo('mainMenu'); });
         });
     };
     window.studentLogin = function() {
-        let name = document.getElementById('studentName').value.trim();
-        let pass = document.getElementById('studentPass').value;
-        let id = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
-        db.ref('ogrenciler/' + id).once('value', s => {
+        let name = document.getElementById('studentName').value.trim(), pass = document.getElementById('studentPass').value;
+        let id = name.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        db.ref('ogrenciler/'+id).once('value', s => {
             let u = s.val();
             if (!u) return alert("Öğrenci bulunamadı");
             if (u.status !== 'approved') return alert("Hesabınız onay bekliyor!");
             if (u.pass !== pass) return alert("Şifre yanlış");
             currentStudent = u.name;
             document.getElementById('studentWel').innerHTML = `Merhaba, ${currentStudent}`;
-            goPage('studentDashboard');
+            navigateTo('studentDashboard');
             loadStudentAnnounce();
         });
     };
     function loadStudentAnnounce() {
         db.ref('duyuru').on('value', sn => { let d = sn.val(); let box = document.getElementById('studentAnnounceArea'); let span = document.getElementById('studentAnnounceText'); if (d && d.text) { box.classList.remove('hidden'); span.innerText = `${d.text} (${d.author})`; } else box.classList.add('hidden'); });
     }
-    window.logoutStudent = function() { currentStudent = null; goPage('mainMenu'); };
+    window.logoutStudent = function() { currentStudent = null; navigateTo('mainMenu'); };
 
-    // ========== YETKİLİ İŞLEMLERİ ==========
+    // ========== YETKİLİ ==========
     window.adminLogin = function() {
-        let sifre = ""; sifre += String.fromCharCode(214, 72, 71, 54, 49, 51, 55, 50, 53);
-        if (document.getElementById('adminPwd').value === sifre) goPage('adminPanel');
+        let sifre = ""; sifre += String.fromCharCode(214,72,71,54,49,51,55,50,53);
+        if (document.getElementById('adminPwd').value === sifre) navigateTo('adminPanel');
         else alert("Yetkisiz giriş");
     };
     function loadAdminData() {
-        db.ref('ogretmenler').on('value', sn => { let pend = document.getElementById('pendingTeachersList'), appr = document.getElementById('approvedTeachersList'); pend.innerHTML = ""; appr.innerHTML = ""; sn.forEach(c => { let t = c.val(); if (t.status === 'pending') pend.innerHTML += `<div class='card'>${t.name} <button class='small-btn' onclick="approveTeacher('${c.key}')">Onayla</button></div>`; else if (t.status === 'approved') appr.innerHTML += `<div class='card'>${t.name} <button class='small-btn' onclick="deleteTeacher('${c.key}')">Sil</button></div>`; }); });
-        db.ref('ogrenciler').on('value', sn => { let pend = document.getElementById('pendingStudentsList'), appr = document.getElementById('approvedStudentsList'); pend.innerHTML = ""; appr.innerHTML = ""; sn.forEach(c => { let s = c.val(); if (s.status === 'pending') pend.innerHTML += `<div class='card'>${s.name} <button class='small-btn' onclick="approveStudent('${c.key}')">Onayla</button></div>`; else if (s.status === 'approved') appr.innerHTML += `<div class='card'>${s.name} <button class='small-btn' onclick="deleteStudent('${c.key}')">Sil</button></div>`; }); });
+        db.ref('ogretmenler').on('value', sn => { let p = document.getElementById('pendingTeachersList'), a = document.getElementById('approvedTeachersList'); p.innerHTML = ""; a.innerHTML = ""; sn.forEach(c => { let t = c.val(); if (t.status === 'pending') p.innerHTML += `<div class='card'>${t.name} <button class='small-btn' onclick="approveTeacher('${c.key}')">Onayla</button></div>`; else if (t.status === 'approved') a.innerHTML += `<div class='card'>${t.name} <button class='small-btn' onclick="deleteTeacher('${c.key}')">Sil</button></div>`; }); });
+        db.ref('ogrenciler').on('value', sn => { let p = document.getElementById('pendingStudentsList'), a = document.getElementById('approvedStudentsList'); p.innerHTML = ""; a.innerHTML = ""; sn.forEach(c => { let s = c.val(); if (s.status === 'pending') p.innerHTML += `<div class='card'>${s.name} <button class='small-btn' onclick="approveStudent('${c.key}')">Onayla</button></div>`; else if (s.status === 'approved') a.innerHTML += `<div class='card'>${s.name} <button class='small-btn' onclick="deleteStudent('${c.key}')">Sil</button></div>`; }); });
         db.ref('duyuru').on('value', sn => { let d = sn.val(); document.getElementById('adminAnnounceShow').innerHTML = d && d.text ? `${d.text} (${d.author})` : "Aktif duyuru yok"; });
-        db.ref('destek_talepleri').on('value', sn => { let supDiv = document.getElementById('supportTicketsList'); supDiv.innerHTML = ""; sn.forEach(c => { let t = c.val(); supDiv.innerHTML += `<div class='card'><b>${t.sender}</b>: ${t.message} <button class='small-btn' onclick="deleteSupport('${c.key}')">Sil</button></div>`; }); if (supDiv.innerHTML === "") supDiv.innerHTML = "<i>Talep yok</i>"; });
+        db.ref('destek_talepleri').on('value', sn => { let sup = document.getElementById('supportTicketsList'); sup.innerHTML = ""; sn.forEach(c => { let t = c.val(); sup.innerHTML += `<div class='card'><b>${t.sender}</b>: ${t.message} <button class='small-btn' onclick="deleteSupport('${c.key}')">Sil</button></div>`; }); if (sup.innerHTML === "") sup.innerHTML = "<i>Talep yok</i>"; });
     }
-    window.approveTeacher = (id) => db.ref('ogretmenler/' + id).update({ status: "approved" });
-    window.deleteTeacher = (id) => { if (confirm("Kalıcı silinsin?")) db.ref('ogretmenler/' + id).remove(); };
-    window.approveStudent = (id) => db.ref('ogrenciler/' + id).update({ status: "approved" });
-    window.deleteStudent = (id) => { if (confirm("Silinsin?")) db.ref('ogrenciler/' + id).remove(); };
+    // ADMIN SOHBET MESAJLARINI GÖR ve SİL
+    function loadAdminChatMessages() {
+        db.ref('genel_sohbet').on('value', sn => {
+            let container = document.getElementById('adminChatMessages');
+            if (!container) return;
+            container.innerHTML = "";
+            sn.forEach(child => {
+                let msg = child.val();
+                container.innerHTML += `<div class='chat-message'><span><b>${msg.sender}:</b> ${msg.text}</span> <button class='small-btn' onclick="deleteChatMessage('${child.key}')">🗑️ Sil</button></div>`;
+            });
+            if (container.innerHTML === "") container.innerHTML = "<i>Henüz mesaj yok</i>";
+        });
+    }
+    window.deleteChatMessage = function(msgId) {
+        if (confirm("Bu mesajı silmek istediğinize emin misiniz?")) {
+            db.ref('genel_sohbet/' + msgId).remove().then(() => alert("Mesaj silindi"));
+        }
+    };
+    window.approveTeacher = (id) => db.ref('ogretmenler/'+id).update({ status: "approved" });
+    window.deleteTeacher = (id) => { if (confirm("Kalıcı silinsin?")) db.ref('ogretmenler/'+id).remove(); };
+    window.approveStudent = (id) => db.ref('ogrenciler/'+id).update({ status: "approved" });
+    window.deleteStudent = (id) => { if (confirm("Silinsin?")) db.ref('ogrenciler/'+id).remove(); };
     window.deleteAnnounce = () => { db.ref('duyuru').remove(); alert("Duyuru silindi"); };
-    window.deleteSupport = (id) => db.ref('destek_talepleri/' + id).remove();
-    window.logoutAdmin = () => goPage('mainMenu');
+    window.deleteSupport = (id) => { if (confirm("Destek talebi silinsin?")) db.ref('destek_talepleri/'+id).remove(); };
+    window.logoutAdmin = () => navigateTo('mainMenu');
 
     // ========== SOHBET ==========
-    window.openChatPage = () => goPage('chatPage');
+    window.openChatPage = () => navigateTo('chatPage');
     window.sendChatMsg = function() {
         let msg = document.getElementById('chatInput').value.trim();
         if (!msg) return;
@@ -471,24 +346,30 @@
         db.ref('genel_sohbet').push({ sender, text: msg, time: Date.now() });
         document.getElementById('chatInput').value = '';
     };
-    function loadChat() {
-        db.ref('genel_sohbet').limitToLast(30).on('value', sn => { let box = document.getElementById('chatBox'); if (box) { box.innerHTML = ""; sn.forEach(m => { let data = m.val(); box.innerHTML += `<div><b>${data.sender}:</b> ${data.text}</div>`; }); box.scrollTop = box.scrollHeight; } });
+    function loadChatMessages() {
+        db.ref('genel_sohbet').limitToLast(30).on('value', sn => {
+            let box = document.getElementById('chatBox');
+            if (box) { box.innerHTML = ""; sn.forEach(m => { let data = m.val(); box.innerHTML += `<div><b>${data.sender}:</b> ${data.text}</div>`; }); box.scrollTop = box.scrollHeight; }
+        });
     }
 
-    // ========== DESTEK ==========
-    window.openSupportPage = () => goPage('supportPage');
+    // ========== DESTEK + HYPACKEL ==========
+    window.openSupportPage = () => navigateTo('supportPage');
     window.sendSupport = function() {
         let msg = document.getElementById('supportMsg').value.trim();
-        if (!msg || !currentStudent) return alert("Mesaj yazın veya giriş yapın");
+        if (!msg) return alert("Lütfen bir mesaj yazın.");
+        if (msg.toLowerCase() === "muhittin böcek") { window.open("https://hypackel.shop", "_blank"); document.getElementById('supportMsg').value = ""; return; }
+        if (!currentStudent) return alert("Destek için öğrenci girişi yapmalısınız.");
         db.ref('destek_talepleri').push({ sender: currentStudent, message: msg, time: Date.now() });
         alert("Destek talebiniz iletildi.");
-        goPage('studentDashboard');
+        document.getElementById('supportMsg').value = "";
+        navigateTo('studentDashboard');
     };
 
-    // Sayfa ilk yüklenişte aktif sınıf/ders
     window.onload = () => {
         if (document.querySelector('.class-btn[data-class="5"]')) document.querySelector('.class-btn[data-class="5"]').classList.add('active');
         if (document.querySelector('.subject-btn[data-sub="matematik"]')) document.querySelector('.subject-btn[data-sub="matematik"]').classList.add('active');
+        navigateTo('mainMenu');
     };
 </script>
 </body>
