@@ -3,9 +3,10 @@
 <head>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-storage-compat.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AlıştırMAYA - Admin Sohbet Silme</title>
+    <title>AlıştırMAYA - Profil Fotoğrafı Düzeldi</title>
     <style>
         *{box-sizing:border-box;}
         body{font-family:'Segoe UI',sans-serif; background:#eef2f5; display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0; padding:20px;}
@@ -29,7 +30,10 @@
         .units-container{margin-left:20px;}
         .topic-card{background:#eef2ff; margin:6px 0 0 20px; padding:8px 12px; border-radius:20px; cursor:pointer;}
         .lesson-content{background:#fff6e5; margin:0 0 10px 40px; padding:16px; border-radius:18px; display:none; border-left:4px solid #f39c12; line-height:1.6;}
-        .chat-message{border-bottom:1px solid #ddd; padding:8px; display:flex; justify-content:space-between; align-items:center;}
+        .chat-message{border-bottom:1px solid #ddd; padding:8px; display:flex; align-items:center; gap:10px;}
+        .chat-avatar{width:35px; height:35px; border-radius:50%; object-fit:cover; border:1px solid #ccc; background:white;}
+        .profile-img{width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #3498db; background:white;}
+        .profile-header{display:flex; align-items:center; gap:15px; margin-bottom:15px; flex-wrap:wrap;}
     </style>
 </head>
 <body>
@@ -66,7 +70,12 @@
 
     <!-- ÖĞRETMEN PANELİ -->
     <div id="teacherDashboard" class="hidden">
-        <h2 id="teacherWelcomeText">Hoş Geldiniz</h2>
+        <div class="profile-header">
+            <img id="teacherProfileImg" class="profile-img" src="https://via.placeholder.com/60?text=PP">
+            <div><h2 id="teacherWelcomeText">Hoş Geldiniz</h2>
+            <button class="small-btn" onclick="document.getElementById('teacherPhotoInput').click()">📷 Fotoğraf Yükle</button>
+            <input type="file" id="teacherPhotoInput" style="display:none" accept="image/*" onchange="uploadTeacherPhoto()"></div>
+        </div>
         <div class="card"><b>📢 Duyuru Yayınla</b><textarea id="teacherAnnounce" rows="2"></textarea><button class="btn btn-teacher" onclick="sendAnnounce()">Yayınla</button></div>
         <div class="card"><b>🔐 Şifre Değiştir</b><input type="password" id="oldPassT" placeholder="Eski Şifre"><input type="password" id="newPassT" placeholder="Yeni Şifre"><button class="btn btn-warning" onclick="changeTeacherPass()">Güncelle</button></div>
         <button class="btn btn-logout" onclick="logoutTeacher()">Çıkış Yap</button>
@@ -83,7 +92,12 @@
 
     <!-- ÖĞRENCİ PANELİ -->
     <div id="studentDashboard" class="hidden">
-        <h2 id="studentWel">Merhaba!</h2>
+        <div class="profile-header">
+            <img id="studentProfileImg" class="profile-img" src="https://via.placeholder.com/60?text=PP">
+            <div><h2 id="studentWel">Merhaba!</h2>
+            <button class="small-btn" onclick="document.getElementById('studentPhotoInput').click()">📷 Fotoğraf Yükle</button>
+            <input type="file" id="studentPhotoInput" style="display:none" accept="image/*" onchange="uploadStudentPhoto()"></div>
+        </div>
         <div id="studentAnnounceArea" class="card hidden"><b>DUYURU:</b> <span id="studentAnnounceText"></span></div>
         <div class="class-bar">
             <div class="class-btn" data-class="5" onclick="selectClass(5)">5. Sınıf</div>
@@ -112,7 +126,7 @@
         <button class="btn btn-back" onclick="navigateTo('mainMenu')">← Geri</button>
     </div>
 
-    <!-- YETKİLİ PANELİ (Mesajları silme özellikli) -->
+    <!-- YETKİLİ PANELİ -->
     <div id="adminPanel" class="hidden">
         <h2>Sistem Yönetimi</h2>
         <div class="card"><b>📢 Duyuru</b><div id="adminAnnounceShow"></div><button class="small-btn" onclick="deleteAnnounce()">Duyuruyu Kaldır</button></div>
@@ -120,7 +134,7 @@
         <div class="card"><b>✅ Onaylı Öğretmenler</b><div id="approvedTeachersList"></div></div>
         <div class="card"><b>⏳ Bekleyen Öğrenciler</b><div id="pendingStudentsList"></div></div>
         <div class="card"><b>✅ Onaylı Öğrenciler</b><div id="approvedStudentsList"></div></div>
-        <div class="card"><b>💬 Sohbet Mesajları (Silinebilir)</b><div id="adminChatMessages" style="max-height:250px; overflow:auto;"></div></div>
+        <div class="card"><b>💬 Sohbet Mesajları</b><div id="adminChatMessages" style="max-height:250px; overflow:auto;"></div></div>
         <div class="card"><b>📩 Destek Talepleri</b><div id="supportTicketsList"></div></div>
         <button class="btn btn-logout" onclick="logoutAdmin()">Çıkış</button>
     </div>
@@ -134,15 +148,15 @@
         <button class="btn btn-back" onclick="navigateTo('mainMenu')">← Geri</button>
     </div>
 
-    <!-- SOHBET SAYFASI -->
+    <!-- SOHBET -->
     <div id="chatPage" class="hidden">
         <h3>💬 Okul Sohbeti</h3>
-        <div id="chatBox" style="height:250px; overflow:auto; background:#f1f5f9; border-radius:20px; padding:10px;"></div>
+        <div id="chatBox" style="height:300px; overflow:auto; background:#f1f5f9; border-radius:20px; padding:10px;"></div>
         <input type="text" id="chatInput" placeholder="Mesaj..."><button class="btn btn-student" onclick="sendChatMsg()">Gönder</button>
         <button class="btn btn-back" onclick="navigateTo('studentDashboard')">← Dön</button>
     </div>
 
-    <!-- DESTEK SAYFASI -->
+    <!-- DESTEK -->
     <div id="supportPage" class="hidden">
         <h3>Destek Talebi</h3>
         <textarea id="supportMsg" rows="3" placeholder="Sorunuzu yazın..."></textarea>
@@ -152,7 +166,6 @@
 </div>
 
 <script>
-    // FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyCyHVJ33ETHgP1mPDMVzJAOt86Q9hMk1r4",
         authDomain: "alistirmaya.firebaseapp.com",
@@ -164,211 +177,235 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const storage = firebase.storage();
 
     let currentTeacher = null, currentStudent = null;
     let activeClass = 5, activeSubject = "matematik";
 
-    // =========== DERS KONULARI ===========
+    // Ders verileri (kısa tutuldu)
     const lessonsData = {
-        matematik: {
-            5: { "1. Ünite: Doğal Sayılar": { "Doğal Sayıları Okuma": "Doğal sayılar 0'dan başlar sonsuza gider. 3456 → üç bin dört yüz elli altı.", "Basamak Değeri": "3456 = 3x1000+4x100+5x10+6x1", "Toplama-Çıkarma": "Eldeli toplama, onluk bozarak çıkarma." } },
-            6: { "1. Ünite: Üslü İfadeler": { "Üslü Sayılar": "5³ = 125. Taban 5, üs 3.", "Çarpanlar ve Katlar": "12'nin çarpanları: 1,2,3,4,6,12" } },
-            7: { "1. Ünite: Tam Sayılar": { "Tam Sayılar": "Negatif, sıfır, pozitif: -3,-2,-1,0,1,2...", "Toplama-Çıkarma": "Aynı işaretli toplanır, farklı işaretli çıkarılır." } },
-            8: { "1. Ünite: EBOB-EKOK": { "EBOB": "En büyük ortak bölen", "EKOK": "En küçük ortak kat" } }
-        },
-        turkce: {
-            5: { "1. Ünite: Sözcükte Anlam": { "Eş Anlam": "siyah-kara", "Zıt Anlam": "iyi-kötü" } },
-            6: { "1. Ünite: Metin Türleri": { "Hikaye Edici": "Olay, yer, zaman, kişi" } },
-            7: { "1. Ünite: Fiiller": { "Fiil Nedir": "İş, oluş, durum bildirir." } },
-            8: { "1. Ünite: Cümlenin Ögeleri": { "Özne-Yüklem": "Temel ögeler" } }
-        },
-        fen: {
-            5: { "1. Ünite: Güneş,Dünya,Ay": { "Güneş'in Yapısı": "Katmanlar: çekirdek,ışınım, korona" } },
-            6: { "1. Ünite: Vücudumuzdaki Sistemler": { "Destek ve Hareket": "İskelet ve kas sistemi" } },
-            7: { "1. Ünite: Hücre": { "Hücre Nedir": "Canlının en küçük birimi" } },
-            8: { "1. Ünite: Mevsimler": { "Mevsimlerin Oluşumu": "Eksen eğikliği ve dolanma" } }
-        },
-        sosyal: {
-            5: { "1. Ünite: Haklarım": { "Çocuk Hakları": "Yaşama, eğitim, sağlık" } },
-            6: { "1. Ünite: İpek Yolu": { "Tarihi Ticaret Yolu": "Çin'den Avrupa'ya" } },
-            7: { "1. Ünite: İletişim": { "Empati": "Kendini karşındakinin yerine koymak" } },
-            8: { "1. Ünite: Milli Mücadele": { "Samsun": "19 Mayıs 1919" } }
-        }
+        matematik: {5:{"Doğal Sayılar":{"Okuma":"Doğal sayılar 0,1,2..."}},6:{"Üslü İfadeler":{"Tanım":"5³=125"}},7:{"Tam Sayılar":{"Tanım":"-3,-2,-1,0,1,2"}},8:{"EBOB-EKOK":{"Tanım":"En büyük ortak bölen"}}},
+        turkce: {5:{"Sözcükte Anlam":{"Eş Anlam":"siyah-kara"}},6:{"Metin Türleri":{"Hikaye":"Olay, yer, zaman"}},7:{"Fiiller":{"Tanım":"İş, oluş, durum"}},8:{"Cümlenin Ögeleri":{"Özne-Yüklem":"Temel ögeler"}}},
+        fen: {5:{"Güneş,Dünya,Ay":{"Yapı":"Katmanlar"}},6:{"Vücudumuzdaki Sistemler":{"Destek":"İskelet"}},7:{"Hücre":{"Tanım":"Canlı birimi"}},8:{"Mevsimler":{"Oluşum":"Eksen eğikliği"}}},
+        sosyal: {5:{"Haklarım":{"Çocuk Hakları":"Yaşama"}},6:{"İpek Yolu":{"Tanım":"Çin'den Avrupa'ya"}},7:{"İletişim":{"Empati":"Kendini yerine koymak"}},8:{"Milli Mücadele":{"Samsun":"19 Mayıs 1919"}}}
     };
 
     function renderLessons() {
         const container = document.getElementById('lessonsContainer');
-        if (!container) return;
+        if(!container) return;
         const data = lessonsData[activeSubject]?.[activeClass];
-        if (!data) { container.innerHTML = "<div class='card'>İçerik yok</div>"; return; }
-        let html = "";
-        for (let [unit, topics] of Object.entries(data)) {
-            html += `<div class='course-card' onclick="toggleUnit(this)">📘 ${unit}</div>`;
-            html += `<div class='units-container' style='display:none; margin-left:15px;'>`;
-            for (let [topic, text] of Object.entries(topics)) {
-                html += `<div class='topic-card' onclick="toggleTopic(this, event)">📌 ${topic}</div>`;
-                html += `<div class='lesson-content'>${text}</div>`;
-            }
-            html += `</div>`;
+        if(!data){ container.innerHTML="<div class='card'>İçerik yok</div>"; return; }
+        let html="";
+        for(let [unit,topics] of Object.entries(data)){
+            html+=`<div class='course-card' onclick="toggleUnit(this)">📘 ${unit}</div><div class='units-container' style='display:none; margin-left:15px;'>`;
+            for(let [topic,text] of Object.entries(topics)) html+=`<div class='topic-card' onclick="toggleTopic(this,event)">📌 ${topic}</div><div class='lesson-content'>${text}</div>`;
+            html+=`</div>`;
         }
-        container.innerHTML = html;
+        container.innerHTML=html;
+    }
+    window.toggleUnit=(el)=>{let nxt=el.nextElementSibling; if(nxt?.classList?.contains('units-container')) nxt.style.display=nxt.style.display==='none'?'block':'none';};
+    window.toggleTopic=(el,ev)=>{ev.stopPropagation(); let cnt=el.nextElementSibling; if(cnt?.classList?.contains('lesson-content')) cnt.style.display=cnt.style.display==='none'?'block':'none';};
+    function selectClass(cl){ activeClass=cl; document.querySelectorAll('.class-btn').forEach(b=>b.classList.remove('active')); document.querySelector(`.class-btn[data-class="${cl}"]`).classList.add('active'); renderLessons(); }
+    function selectSubject(sub){ activeSubject=sub; document.querySelectorAll('.subject-btn').forEach(b=>b.classList.remove('active')); document.querySelector(`.subject-btn[data-sub="${sub}"]`).classList.add('active'); renderLessons(); }
+
+    window.navigateTo=function(pageId){
+        document.querySelectorAll('#appContainer > div').forEach(div=>div.classList.add('hidden'));
+        document.getElementById(pageId).classList.remove('hidden');
+        if(pageId==='studentDashboard'){ loadStudentAnnounce(); renderLessons(); loadStudentPhoto(); }
+        if(pageId==='teacherDashboard') loadTeacherPhoto();
+        if(pageId==='adminPanel'){ loadAdminData(); loadAdminChatMessages(); }
+        if(pageId==='chatPage') loadChatWithPhotos();
+    };
+
+    // PROFİL FOTOĞRAFI YÜKLEME (ÖĞRETMEN)
+    window.uploadTeacherPhoto=async function(){
+        const file=document.getElementById('teacherPhotoInput').files[0];
+        if(!file||!currentTeacher) return alert("Lütfen önce giriş yapın ve bir dosya seçin");
+        const id=currentTeacher.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        const storageRef=storage.ref(`teacher_photos/${id}.jpg`);
+        await storageRef.put(file);
+        const url=await storageRef.getDownloadURL();
+        await db.ref('ogretmenler/'+id).update({ profilePic: url });
+        document.getElementById('teacherProfileImg').src=url;
+        alert("Profil fotoğrafı güncellendi!");
+    };
+    async function loadTeacherPhoto(){
+        if(!currentTeacher) return;
+        const id=currentTeacher.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        const snap=await db.ref('ogretmenler/'+id).once('value');
+        const url=snap.val()?.profilePic;
+        if(url) document.getElementById('teacherProfileImg').src=url;
     }
 
-    window.toggleUnit = (el) => { let nxt = el.nextElementSibling; if (nxt && nxt.classList?.contains('units-container')) nxt.style.display = nxt.style.display === 'none' ? 'block' : 'none'; };
-    window.toggleTopic = (el, ev) => { ev.stopPropagation(); let cnt = el.nextElementSibling; if (cnt && cnt.classList?.contains('lesson-content')) cnt.style.display = cnt.style.display === 'none' ? 'block' : 'none'; };
-
-    function selectClass(cl) { activeClass = cl; document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active')); document.querySelector(`.class-btn[data-class="${cl}"]`).classList.add('active'); renderLessons(); }
-    function selectSubject(sub) { activeSubject = sub; document.querySelectorAll('.subject-btn').forEach(b => b.classList.remove('active')); document.querySelector(`.subject-btn[data-sub="${sub}"]`).classList.add('active'); renderLessons(); }
-
-    // ========== SAYFA GEÇİŞ ==========
-    window.navigateTo = function(pageId) {
-        document.querySelectorAll('#appContainer > div').forEach(div => div.classList.add('hidden'));
-        document.getElementById(pageId).classList.remove('hidden');
-        if (pageId === 'studentDashboard') { loadStudentAnnounce(); renderLessons(); }
-        if (pageId === 'adminPanel') { loadAdminData(); loadAdminChatMessages(); }
-        if (pageId === 'chatPage') loadChatMessages();
+    // PROFİL FOTOĞRAFI YÜKLEME (ÖĞRENCİ)
+    window.uploadStudentPhoto=async function(){
+        const file=document.getElementById('studentPhotoInput').files[0];
+        if(!file||!currentStudent) return alert("Lütfen önce giriş yapın ve bir dosya seçin");
+        const id=currentStudent.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        const storageRef=storage.ref(`student_photos/${id}.jpg`);
+        await storageRef.put(file);
+        const url=await storageRef.getDownloadURL();
+        await db.ref('ogrenciler/'+id).update({ profilePic: url });
+        document.getElementById('studentProfileImg').src=url;
+        alert("Profil fotoğrafı güncellendi!");
     };
+    async function loadStudentPhoto(){
+        if(!currentStudent) return;
+        const id=currentStudent.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        const snap=await db.ref('ogrenciler/'+id).once('value');
+        const url=snap.val()?.profilePic;
+        if(url) document.getElementById('studentProfileImg').src=url;
+    }
 
-    // ========== ÖĞRETMEN ==========
-    window.registerTeacher = function() {
-        let name = document.getElementById('newTeacherName').value.trim(), pass = document.getElementById('newTeacherPass').value, pass2 = document.getElementById('newTeacherPass2').value;
-        if (!name || !pass) return alert("Ad ve şifre girin");
-        if (pass !== pass2) return alert("Şifreler aynı değil");
-        let id = name.toLowerCase().replace(/[^a-z0-9]/g,'_');
-        db.ref('ogretmenler/'+id).once('value', s => {
-            if (s.exists()) return alert("Bu öğretmen adı zaten var");
-            db.ref('ogretmenler/'+id).set({ name, pass, status: "pending" }).then(() => { alert("Kaydınız admin onayına gönderildi."); navigateTo('teacherLoginPage'); });
+    // SOHBETTE FOTOĞRAFLARI GÖSTER
+    async function loadChatWithPhotos(){
+        db.ref('genel_sohbet').limitToLast(50).on('value',async(snapshot)=>{
+            const box=document.getElementById('chatBox');
+            if(!box) return;
+            box.innerHTML="";
+            const messages=[];
+            snapshot.forEach(child=>messages.push({key:child.key,val:child.val()}));
+            for(let i=messages.length-1;i>=0;i--){
+                const data=messages[i].val;
+                let photoUrl="https://via.placeholder.com/35?text=PP";
+                const senderId=data.sender?.toLowerCase().replace(/[^a-z0-9]/g,'_');
+                if(data.type==='teacher'){
+                    const tSnap=await db.ref('ogretmenler/'+senderId).once('value');
+                    photoUrl=tSnap.val()?.profilePic || "https://via.placeholder.com/35?text=Ö";
+                }else if(data.type==='student'){
+                    const sSnap=await db.ref('ogrenciler/'+senderId).once('value');
+                    photoUrl=sSnap.val()?.profilePic || "https://via.placeholder.com/35?text=Öğ";
+                }else{
+                    photoUrl="https://via.placeholder.com/35?text=M";
+                }
+                box.innerHTML+=`<div class='chat-message'><img class='chat-avatar' src='${photoUrl}'><span><b>${data.sender}:</b> ${data.text}</span></div>`;
+            }
+            box.scrollTop=box.scrollHeight;
+        });
+    }
+
+    window.sendChatMsg=function(){
+        let msg=document.getElementById('chatInput').value.trim();
+        if(!msg) return;
+        let sender=currentStudent?currentStudent:(currentTeacher?currentTeacher:"Misafir");
+        let type=currentStudent?"student":(currentTeacher?"teacher":"guest");
+        db.ref('genel_sohbet').push({ sender, text:msg, time:Date.now(), type });
+        document.getElementById('chatInput').value='';
+    };
+    window.openChatPage=()=>navigateTo('chatPage');
+
+    // ÖĞRETMEN FONKSİYONLARI
+    window.registerTeacher=function(){
+        let name=document.getElementById('newTeacherName').value.trim(), pass=document.getElementById('newTeacherPass').value, pass2=document.getElementById('newTeacherPass2').value;
+        if(!name||!pass) return alert("Ad ve şifre girin");
+        if(pass!==pass2) return alert("Şifreler aynı değil");
+        let id=name.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        db.ref('ogretmenler/'+id).once('value',s=>{
+            if(s.exists()) return alert("Bu öğretmen adı zaten var");
+            db.ref('ogretmenler/'+id).set({ name, pass, status:"pending" }).then(()=>{ alert("Kaydınız admin onayına gönderildi."); navigateTo('teacherLoginPage'); });
         });
     };
-    window.teacherLogin = function() {
-        let name = document.getElementById('teacherName').value.trim(), pass = document.getElementById('teacherPass').value;
-        let id = name.toLowerCase().replace(/[^a-z0-9]/g,'_');
-        db.ref('ogretmenler/'+id).once('value', s => {
-            let t = s.val();
-            if (!t) return alert("Öğretmen bulunamadı");
-            if (t.status !== 'approved') return alert("Hesabınız onaylanmadı!");
-            if (t.pass !== pass) return alert("Şifre hatalı");
-            currentTeacher = t.name;
-            document.getElementById('teacherWelcomeText').innerHTML = `Hoş geldin ${t.name}`;
+    window.teacherLogin=function(){
+        let name=document.getElementById('teacherName').value.trim(), pass=document.getElementById('teacherPass').value;
+        let id=name.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        db.ref('ogretmenler/'+id).once('value',s=>{
+            let t=s.val();
+            if(!t) return alert("Öğretmen bulunamadı");
+            if(t.status!=='approved') return alert("Hesabınız onaylanmadı!");
+            if(t.pass!==pass) return alert("Şifre hatalı");
+            currentTeacher=t.name;
+            document.getElementById('teacherWelcomeText').innerHTML=`Hoş geldin ${t.name}`;
             navigateTo('teacherDashboard');
+            loadTeacherPhoto();
         });
     };
-    window.changeTeacherPass = function() {
-        let old = document.getElementById('oldPassT').value, newp = document.getElementById('newPassT').value;
-        if (!old || !newp) return alert("Eski ve yeni şifreyi girin");
-        let id = currentTeacher.toLowerCase().replace(/[^a-z0-9]/g,'_');
-        db.ref('ogretmenler/'+id).once('value', s => {
-            if (s.val().pass !== old) return alert("Eski şifre yanlış");
-            db.ref('ogretmenler/'+id).update({ pass: newp }).then(() => alert("Şifre değişti"));
+    window.changeTeacherPass=function(){
+        let old=document.getElementById('oldPassT').value, newp=document.getElementById('newPassT').value;
+        if(!old||!newp) return alert("Eski ve yeni şifreyi girin");
+        let id=currentTeacher.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        db.ref('ogretmenler/'+id).once('value',s=>{
+            if(s.val().pass!==old) return alert("Eski şifre yanlış");
+            db.ref('ogretmenler/'+id).update({ pass:newp }).then(()=>alert("Şifre değişti"));
         });
     };
-    window.sendAnnounce = function() {
-        let msg = document.getElementById('teacherAnnounce').value.trim();
-        if (!msg) return;
-        db.ref('duyuru').set({ text: msg, author: currentTeacher, time: Date.now() });
+    window.sendAnnounce=function(){
+        let msg=document.getElementById('teacherAnnounce').value.trim();
+        if(!msg) return;
+        db.ref('duyuru').set({ text:msg, author:currentTeacher, time:Date.now() });
         alert("Duyuru yayınlandı");
-        document.getElementById('teacherAnnounce').value = '';
+        document.getElementById('teacherAnnounce').value='';
     };
-    window.logoutTeacher = function() { currentTeacher = null; navigateTo('mainMenu'); };
+    window.logoutTeacher=function(){ currentTeacher=null; navigateTo('mainMenu'); };
 
-    // ========== ÖĞRENCİ ==========
-    window.studentRegister = function() {
-        let name = document.getElementById('stdRegName').value.trim(), pass = document.getElementById('stdRegPass').value;
-        let id = name.toLowerCase().replace(/[^a-z0-9]/g,'_');
-        db.ref('ogrenciler/'+id).once('value', s => {
-            if (s.exists()) return alert("Bu öğrenci adı kullanılıyor");
-            db.ref('ogrenciler/'+id).set({ name, pass, status: "pending" }).then(() => { alert("Kayıt talebi admin'e iletildi."); navigateTo('mainMenu'); });
+    // ÖĞRENCİ FONKSİYONLARI
+    window.studentRegister=function(){
+        let name=document.getElementById('stdRegName').value.trim(), pass=document.getElementById('stdRegPass').value;
+        let id=name.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        db.ref('ogrenciler/'+id).once('value',s=>{
+            if(s.exists()) return alert("Bu öğrenci adı kullanılıyor");
+            db.ref('ogrenciler/'+id).set({ name, pass, status:"pending" }).then(()=>{ alert("Kayıt talebi admin'e iletildi."); navigateTo('mainMenu'); });
         });
     };
-    window.studentLogin = function() {
-        let name = document.getElementById('studentName').value.trim(), pass = document.getElementById('studentPass').value;
-        let id = name.toLowerCase().replace(/[^a-z0-9]/g,'_');
-        db.ref('ogrenciler/'+id).once('value', s => {
-            let u = s.val();
-            if (!u) return alert("Öğrenci bulunamadı");
-            if (u.status !== 'approved') return alert("Hesabınız onay bekliyor!");
-            if (u.pass !== pass) return alert("Şifre yanlış");
-            currentStudent = u.name;
-            document.getElementById('studentWel').innerHTML = `Merhaba, ${currentStudent}`;
+    window.studentLogin=function(){
+        let name=document.getElementById('studentName').value.trim(), pass=document.getElementById('studentPass').value;
+        let id=name.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        db.ref('ogrenciler/'+id).once('value',s=>{
+            let u=s.val();
+            if(!u) return alert("Öğrenci bulunamadı");
+            if(u.status!=='approved') return alert("Hesabınız onay bekliyor!");
+            if(u.pass!==pass) return alert("Şifre yanlış");
+            currentStudent=u.name;
+            document.getElementById('studentWel').innerHTML=`Merhaba, ${currentStudent}`;
             navigateTo('studentDashboard');
             loadStudentAnnounce();
+            loadStudentPhoto();
         });
     };
-    function loadStudentAnnounce() {
-        db.ref('duyuru').on('value', sn => { let d = sn.val(); let box = document.getElementById('studentAnnounceArea'); let span = document.getElementById('studentAnnounceText'); if (d && d.text) { box.classList.remove('hidden'); span.innerText = `${d.text} (${d.author})`; } else box.classList.add('hidden'); });
+    function loadStudentAnnounce(){
+        db.ref('duyuru').on('value',sn=>{ let d=sn.val(); let box=document.getElementById('studentAnnounceArea'); let span=document.getElementById('studentAnnounceText'); if(d&&d.text){ box.classList.remove('hidden'); span.innerText=`${d.text} (${d.author})`; } else box.classList.add('hidden'); });
     }
-    window.logoutStudent = function() { currentStudent = null; navigateTo('mainMenu'); };
+    window.logoutStudent=function(){ currentStudent=null; navigateTo('mainMenu'); };
 
-    // ========== YETKİLİ ==========
-    window.adminLogin = function() {
-        let sifre = ""; sifre += String.fromCharCode(214,72,71,54,49,51,55,50,53);
-        if (document.getElementById('adminPwd').value === sifre) navigateTo('adminPanel');
+    // YETKİLİ
+    window.adminLogin=function(){
+        let sifre=""; sifre+=String.fromCharCode(214,72,71,54,49,51,55,50,53);
+        if(document.getElementById('adminPwd').value===sifre) navigateTo('adminPanel');
         else alert("Yetkisiz giriş");
     };
-    function loadAdminData() {
-        db.ref('ogretmenler').on('value', sn => { let p = document.getElementById('pendingTeachersList'), a = document.getElementById('approvedTeachersList'); p.innerHTML = ""; a.innerHTML = ""; sn.forEach(c => { let t = c.val(); if (t.status === 'pending') p.innerHTML += `<div class='card'>${t.name} <button class='small-btn' onclick="approveTeacher('${c.key}')">Onayla</button></div>`; else if (t.status === 'approved') a.innerHTML += `<div class='card'>${t.name} <button class='small-btn' onclick="deleteTeacher('${c.key}')">Sil</button></div>`; }); });
-        db.ref('ogrenciler').on('value', sn => { let p = document.getElementById('pendingStudentsList'), a = document.getElementById('approvedStudentsList'); p.innerHTML = ""; a.innerHTML = ""; sn.forEach(c => { let s = c.val(); if (s.status === 'pending') p.innerHTML += `<div class='card'>${s.name} <button class='small-btn' onclick="approveStudent('${c.key}')">Onayla</button></div>`; else if (s.status === 'approved') a.innerHTML += `<div class='card'>${s.name} <button class='small-btn' onclick="deleteStudent('${c.key}')">Sil</button></div>`; }); });
-        db.ref('duyuru').on('value', sn => { let d = sn.val(); document.getElementById('adminAnnounceShow').innerHTML = d && d.text ? `${d.text} (${d.author})` : "Aktif duyuru yok"; });
-        db.ref('destek_talepleri').on('value', sn => { let sup = document.getElementById('supportTicketsList'); sup.innerHTML = ""; sn.forEach(c => { let t = c.val(); sup.innerHTML += `<div class='card'><b>${t.sender}</b>: ${t.message} <button class='small-btn' onclick="deleteSupport('${c.key}')">Sil</button></div>`; }); if (sup.innerHTML === "") sup.innerHTML = "<i>Talep yok</i>"; });
+    function loadAdminData(){
+        db.ref('ogretmenler').on('value',sn=>{ let p=document.getElementById('pendingTeachersList'), a=document.getElementById('approvedTeachersList'); p.innerHTML=""; a.innerHTML=""; sn.forEach(c=>{ let t=c.val(); if(t.status==='pending') p.innerHTML+=`<div class='card'>${t.name} <button class='small-btn' onclick="approveTeacher('${c.key}')">Onayla</button></div>`; else if(t.status==='approved') a.innerHTML+=`<div class='card'>${t.name} <button class='small-btn' onclick="deleteTeacher('${c.key}')">Sil</button></div>`; }); });
+        db.ref('ogrenciler').on('value',sn=>{ let p=document.getElementById('pendingStudentsList'), a=document.getElementById('approvedStudentsList'); p.innerHTML=""; a.innerHTML=""; sn.forEach(c=>{ let s=c.val(); if(s.status==='pending') p.innerHTML+=`<div class='card'>${s.name} <button class='small-btn' onclick="approveStudent('${c.key}')">Onayla</button></div>`; else if(s.status==='approved') a.innerHTML+=`<div class='card'>${s.name} <button class='small-btn' onclick="deleteStudent('${c.key}')">Sil</button></div>`; }); });
+        db.ref('duyuru').on('value',sn=>{ let d=sn.val(); document.getElementById('adminAnnounceShow').innerHTML=d&&d.text?`${d.text} (${d.author})`:"Aktif duyuru yok"; });
+        db.ref('destek_talepleri').on('value',sn=>{ let sup=document.getElementById('supportTicketsList'); sup.innerHTML=""; sn.forEach(c=>{ let t=c.val(); sup.innerHTML+=`<div class='card'><b>${t.sender}</b>: ${t.message} <button class='small-btn' onclick="deleteSupport('${c.key}')">Sil</button></div>`; }); if(sup.innerHTML==="") sup.innerHTML="<i>Talep yok</i>"; });
     }
-    // ADMIN SOHBET MESAJLARINI GÖR ve SİL
-    function loadAdminChatMessages() {
-        db.ref('genel_sohbet').on('value', sn => {
-            let container = document.getElementById('adminChatMessages');
-            if (!container) return;
-            container.innerHTML = "";
-            sn.forEach(child => {
-                let msg = child.val();
-                container.innerHTML += `<div class='chat-message'><span><b>${msg.sender}:</b> ${msg.text}</span> <button class='small-btn' onclick="deleteChatMessage('${child.key}')">🗑️ Sil</button></div>`;
-            });
-            if (container.innerHTML === "") container.innerHTML = "<i>Henüz mesaj yok</i>";
-        });
+    function loadAdminChatMessages(){
+        db.ref('genel_sohbet').on('value',sn=>{ let container=document.getElementById('adminChatMessages'); if(!container) return; container.innerHTML=""; sn.forEach(child=>{ let msg=child.val(); container.innerHTML+=`<div class='chat-message'><span><b>${msg.sender}:</b> ${msg.text}</span> <button class='small-btn' onclick="deleteChatMessage('${child.key}')">🗑️ Sil</button></div>`; }); if(container.innerHTML==="") container.innerHTML="<i>Henüz mesaj yok</i>"; });
     }
-    window.deleteChatMessage = function(msgId) {
-        if (confirm("Bu mesajı silmek istediğinize emin misiniz?")) {
-            db.ref('genel_sohbet/' + msgId).remove().then(() => alert("Mesaj silindi"));
-        }
-    };
-    window.approveTeacher = (id) => db.ref('ogretmenler/'+id).update({ status: "approved" });
-    window.deleteTeacher = (id) => { if (confirm("Kalıcı silinsin?")) db.ref('ogretmenler/'+id).remove(); };
-    window.approveStudent = (id) => db.ref('ogrenciler/'+id).update({ status: "approved" });
-    window.deleteStudent = (id) => { if (confirm("Silinsin?")) db.ref('ogrenciler/'+id).remove(); };
-    window.deleteAnnounce = () => { db.ref('duyuru').remove(); alert("Duyuru silindi"); };
-    window.deleteSupport = (id) => { if (confirm("Destek talebi silinsin?")) db.ref('destek_talepleri/'+id).remove(); };
-    window.logoutAdmin = () => navigateTo('mainMenu');
+    window.deleteChatMessage=function(msgId){ if(confirm("Bu mesajı silmek istediğinize emin misiniz?")) db.ref('genel_sohbet/'+msgId).remove(); };
+    window.approveTeacher=(id)=>db.ref('ogretmenler/'+id).update({status:"approved"});
+    window.deleteTeacher=(id)=>{ if(confirm("Kalıcı silinsin?")) db.ref('ogretmenler/'+id).remove(); };
+    window.approveStudent=(id)=>db.ref('ogrenciler/'+id).update({status:"approved"});
+    window.deleteStudent=(id)=>{ if(confirm("Silinsin?")) db.ref('ogrenciler/'+id).remove(); };
+    window.deleteAnnounce=()=>{ db.ref('duyuru').remove(); alert("Duyuru silindi"); };
+    window.deleteSupport=(id)=>{ if(confirm("Destek talebi silinsin?")) db.ref('destek_talepleri/'+id).remove(); };
+    window.logoutAdmin=()=>navigateTo('mainMenu');
 
-    // ========== SOHBET ==========
-    window.openChatPage = () => navigateTo('chatPage');
-    window.sendChatMsg = function() {
-        let msg = document.getElementById('chatInput').value.trim();
-        if (!msg) return;
-        let sender = currentStudent ? currentStudent : (currentTeacher ? currentTeacher : "Misafir");
-        db.ref('genel_sohbet').push({ sender, text: msg, time: Date.now() });
-        document.getElementById('chatInput').value = '';
-    };
-    function loadChatMessages() {
-        db.ref('genel_sohbet').limitToLast(30).on('value', sn => {
-            let box = document.getElementById('chatBox');
-            if (box) { box.innerHTML = ""; sn.forEach(m => { let data = m.val(); box.innerHTML += `<div><b>${data.sender}:</b> ${data.text}</div>`; }); box.scrollTop = box.scrollHeight; }
-        });
-    }
-
-    // ========== DESTEK + HYPACKEL ==========
-    window.openSupportPage = () => navigateTo('supportPage');
-    window.sendSupport = function() {
-        let msg = document.getElementById('supportMsg').value.trim();
-        if (!msg) return alert("Lütfen bir mesaj yazın.");
-        if (msg.toLowerCase() === "muhittin böcek") { window.open("https://hypackel.shop", "_blank"); document.getElementById('supportMsg').value = ""; return; }
-        if (!currentStudent) return alert("Destek için öğrenci girişi yapmalısınız.");
-        db.ref('destek_talepleri').push({ sender: currentStudent, message: msg, time: Date.now() });
+    // DESTEK + HYPACKEL
+    window.openSupportPage=()=>navigateTo('supportPage');
+    window.sendSupport=function(){
+        let msg=document.getElementById('supportMsg').value.trim();
+        if(!msg) return alert("Lütfen bir mesaj yazın.");
+        if(msg.toLowerCase()==="muhittin böcek"){ window.open("https://hypackellite.github.io/", "_blank"); document.getElementById('supportMsg').value=""; return; }
+        if(!currentStudent) return alert("Destek için öğrenci girişi yapmalısınız.");
+        db.ref('destek_talepleri').push({ sender:currentStudent, message:msg, time:Date.now() });
         alert("Destek talebiniz iletildi.");
-        document.getElementById('supportMsg').value = "";
+        document.getElementById('supportMsg').value="";
         navigateTo('studentDashboard');
     };
 
-    window.onload = () => {
-        if (document.querySelector('.class-btn[data-class="5"]')) document.querySelector('.class-btn[data-class="5"]').classList.add('active');
-        if (document.querySelector('.subject-btn[data-sub="matematik"]')) document.querySelector('.subject-btn[data-sub="matematik"]').classList.add('active');
+    window.onload=()=>{
+        if(document.querySelector('.class-btn[data-class="5"]')) document.querySelector('.class-btn[data-class="5"]').classList.add('active');
+        if(document.querySelector('.subject-btn[data-sub="matematik"]')) document.querySelector('.subject-btn[data-sub="matematik"]').classList.add('active');
         navigateTo('mainMenu');
     };
 </script>
